@@ -32,6 +32,48 @@
       "https://www.qifa.ru/market"
     ]
   },
+  "sumki": {
+    "name": "Сумки и чемоданы",
+    "start_urls": [
+      "https://www.qifa.ru/sumki_i_chemodani"
+    ],
+    
+    "allowed_prefixes": [
+      "https://www.qifa.ru/sumki_i_chemodani"
+    ],
+    "exact_urls_only": true
+  },
+  "sumki2": {
+    "name": "Сумки и чемоданы (листинг)",
+    "start_urls": [
+      "https://www.qifa.ru/catalog/sumki/navcatalog/2/page/1"
+    ],
+    "allowed_prefixes": [
+      "https://www.qifa.ru/catalog/sumki/navcatalog/2/page/"
+    ]
+},
+"sumki_cards_only": {
+    "name": "Только карточки сумок (с page/1)",
+    "start_urls": [
+        "https://www.qifa.ru/catalog/sumki/navcatalog/2/page/1"
+    ],
+    "allowed_prefixes": [
+        "https://www.qifa.ru/chigoods/"
+    ],
+    "link_source_only": true
+},
+"sumki_cards_selenium": {
+    "name": "Только карточки сумок (строго с листинга)",
+    "start_urls": [
+        "https://www.qifa.ru/catalog/sumki/navcatalog/2/page/1"
+    ],
+    "allowed_prefixes": [
+        "https://www.qifa.ru/chigoods/"
+    ],
+    "link_source_only": true,
+    "use_selenium": true,
+    "no_follow_on_targets": true
+},
   "product": {
     "name": "Карточки товаров",
     "start_urls": [
