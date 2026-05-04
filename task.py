@@ -209,6 +209,11 @@ def extract_text_and_links(url: str):
         absolute = normalize_url(urljoin(url, href))
         links.append(absolute)
 
+    # Отладочный вывод собранных ссылок (можно закомментировать)
+    print(f"[DEBUG] Собранные ссылки со страницы {url}:", file=sys.stderr, flush=True)
+    for lnk in links:
+        print(f"  {lnk}", file=sys.stderr, flush=True)
+
     return text_blocks, links
 
 
@@ -228,7 +233,8 @@ def crawl_module(module: dict):
     ]
 
     exact_urls_only = bool(module.get("exact_urls_only", False))
-    exact_urls = set(start_urls)
+    link_source_only = bool(module.get("link_source_only", False))
+    source_urls = set(start_urls) if link_source_only else set()
 
     queue = list(start_urls)
     visited = set()
@@ -237,10 +243,27 @@ def crawl_module(module: dict):
     while queue:
         url = normalize_url(queue.pop(0))
 
+        print(f"[CRAWL] ➜ Проверяю: {url}", file=sys.stderr, flush=True)
+
         if url in visited:
             continue
 
-        if exact_urls_only and url not in exact_urls:
+        if exact_urls_only and url not in source_urls:
+            continue
+
+        if link_source_only and url in source_urls:
+            try:
+                _, links = extract_text_and_links(url)   # получаем только ссылки
+                visited.add(url)
+                for link in links:
+                    link = normalize_url(link)
+                    if link in visited:
+                        continue
+                    if is_allowed_url(link, allowed_prefixes):
+                        queue.append(link)
+                time.sleep(0.5)
+            except Exception:
+                pass
             continue
 
         if not is_allowed_url(url, allowed_prefixes):
@@ -248,6 +271,8 @@ def crawl_module(module: dict):
 
         try:
             text_blocks, links = extract_text_and_links(url)
+
+            print(f"[EXTRACT] ✓ {url} — получено блоков: {len(text_blocks)}", file=sys.stderr, flush=True)
 
             pages.append({
                 "url": url,
@@ -287,7 +312,8 @@ def make_chunks(text_blocks, max_chars=4500):
     current_len = 0
 
     for block in text_blocks:
-        safe_text = block["text"].replace('"', "'")
+        clean = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', block["text"])
+        safe_text = clean.replace('"', "'")
         line = f'BLOCK_ID={block["block_id"]}; TAG={block["tag"]}; TEXT="{safe_text}"'
         line_len = len(line)
 
@@ -319,6 +345,8 @@ def extract_json_array(text: str):
 
 
 def check_chunk(url: str, chunk: str):
+    print(f"[GIGA] ✉ Отправка чанка ({len(chunk)} симв.) для {url}…", file=sys.stderr, flush=True)
+
     prompt = f"""
 Ты профессиональный корректор и редактор русскоязычных сайтов.
 
@@ -369,16 +397,20 @@ URL:
 
     response = giga.chat(prompt)
     content = response.choices[0].message.content.strip()
+    issues = extract_json_array(content)
 
-    return extract_json_array(content)
+    print(f"[GIGA] ✔ Ответ получен, ошибок в чанке: {len(issues)}", file=sys.stderr, flush=True)
+    return issues
 
 
 def run_audit(module_id: str, module: dict):
     pages = crawl_module(module)
     rows = []
+    total = len(pages)
 
-    for page in pages:
+    for idx, page in enumerate(pages, 1):
         url = page["url"]
+        print(f"[AUDIT] Страница {idx}/{total} — {url}", file=sys.stderr, flush=True)
 
         if page["technical_error"]:
             rows.append({
