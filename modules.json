@@ -51,19 +51,19 @@
     "allowed_prefixes": [
       "https://www.qifa.ru/catalog/sumki/navcatalog/2/page/"
     ]
-},
-"sumki_cards_selenium": {
-    "name": "Только карточки сумок (строго с листинга)",
-    "start_urls": [
-        "https://www.qifa.ru/catalog/sumki/navcatalog/2/page/1"
-    ],
-    "allowed_prefixes": [
-        "https://www.qifa.ru/chigoods/"
-    ],
-    "link_source_only": true,
-    "use_selenium": true,
-    "no_follow_on_targets": true
-},
+  },
+  "sumki_cards_selenium": {
+      "name": "Только карточки сумок (строго с листинга)",
+      "start_urls": [
+          "https://www.qifa.ru/catalog/sumki/navcatalog/2/page/1"
+      ],
+      "allowed_prefixes": [
+          "https://www.qifa.ru/chigoods/"
+      ],
+      "link_source_only": true,
+      "use_selenium": true,
+      "no_follow_on_targets": true
+  },
   "product": {
     "name": "Карточки товаров",
     "start_urls": [
